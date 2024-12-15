@@ -13,6 +13,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import project.jaeryang.bank.domain.user.UserEnum;
+import project.jaeryang.bank.util.CustomResponseUtil;
 
 import java.util.Collections;
 
@@ -45,6 +46,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole(UserEnum.ADMIN.name())
                         .anyRequest().permitAll()
                 );
+        // Exception 가로채기 (로그인을 안한 경우 authenticationEntryPoint 정의, 권한 문제면 accessDeniedHandler)
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, accessDeniedException) -> {
+                    CustomResponseUtil.unAuthenticated(response, "로그인을 진행해주세요");
+                }));
 
         return http.build();
     }
