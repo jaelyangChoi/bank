@@ -9,6 +9,14 @@ import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserEnum;
 
 public class UserReqDto {
+
+    @Getter
+    @Setter
+    public static class LoginReqDto {
+        private String username;
+        private String password;
+    }
+
     @Getter
     @Setter
     public static class JoinReqDto {
