@@ -19,7 +19,7 @@ public class User extends BaseTimeEntity {
     @Column(unique = true, nullable = false, length = 20)
     private String username;
 
-    @Column(nullable = false, length = 60) //패스워드 인코딩(BCrypt)
+    @Column(nullable = false, length = 70) //패스워드 인코딩(BCrypt)
     private String password;
 
     @Column(nullable = false, length = 20)
