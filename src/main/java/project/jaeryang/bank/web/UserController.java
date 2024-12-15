@@ -26,12 +26,6 @@ public class UserController {
 
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody @Valid JoinReqDto joinReqDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errorMap = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(err -> errorMap.put(err.getField(), err.getDefaultMessage()));
-            return new ResponseEntity<>(new ResponseDto<>(-1, "회원가입 데이터 유효성 검사 실패", errorMap), HttpStatus.BAD_REQUEST);
-        }
-
         JoinRespDto joinRespDto = userService.join(joinReqDto);
         return new ResponseEntity<>(new ResponseDto<>(1, "회원가입 성공", joinRespDto), HttpStatus.CREATED);
     }
