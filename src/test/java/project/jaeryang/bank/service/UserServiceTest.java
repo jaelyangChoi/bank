@@ -36,7 +36,7 @@ class UserServiceTest extends DummyObject {
         joinReqDto.setUsername("cjl0701");
         joinReqDto.setPassword("1234");
         joinReqDto.setEmail("cjl2076@naver.com");
-        joinReqDto.setFullName("최재량");
+        joinReqDto.setFullname("최재량");
 
         //stub (userRepository 는 믿고 쓴다)
         when(userRepository.existsByUsername(any())).thenReturn(false);
