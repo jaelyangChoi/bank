@@ -7,17 +7,18 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import project.jaeryang.bank.domain.user.User;
+import project.jaeryang.bank.config.dummy.DummyObject;
 import project.jaeryang.bank.domain.user.UserRepository;
-import project.jaeryang.bank.service.UserService.JoinReqDto;
+import project.jaeryang.bank.dto.user.UserReqDto.JoinReqDto;
+import project.jaeryang.bank.dto.user.UserRespDto.JoinRespDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static project.jaeryang.bank.service.UserService.JoinRespDto;
 
-@ExtendWith(MockitoExtension.class) //가짜 환경이라 Spring 관련 Bean들이 없는 환경
-class UserServiceTest {
+
+@ExtendWith(MockitoExtension.class) //가짜 환경이라 Spring 관련 Bean 들이 없는 환경
+class UserServiceTest extends DummyObject {
 
     @InjectMocks //@Mock 으로 생성한 객체를 주입해준다.
     private UserService userService;
@@ -39,14 +40,7 @@ class UserServiceTest {
 
         //stub (userRepository 는 믿고 쓴다)
         when(userRepository.existsByUsername(any())).thenReturn(false);
-        User user = User.builder()
-                .id(1L)
-                .username(joinReqDto.getUsername())
-                .password(joinReqDto.getPassword())
-                .email(joinReqDto.getEmail())
-                .fullname(joinReqDto.getFullName())
-                .build();
-        when(userRepository.save(any())).thenReturn(user);
+        when(userRepository.save(any())).thenReturn(newMockUser(1L, "cjl0701", "최재량"));
 
         //when
         JoinRespDto joinRespDto = userService.join(joinReqDto);

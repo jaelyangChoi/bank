@@ -1,15 +1,16 @@
 package project.jaeryang.bank.service;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.jaeryang.bank.domain.user.User;
-import project.jaeryang.bank.domain.user.UserEnum;
 import project.jaeryang.bank.domain.user.UserRepository;
+import project.jaeryang.bank.dto.user.UserReqDto;
+import project.jaeryang.bank.dto.user.UserReqDto.JoinReqDto;
+import project.jaeryang.bank.dto.user.UserRespDto;
+import project.jaeryang.bank.dto.user.UserRespDto.JoinRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
 
 @Service
@@ -33,38 +34,5 @@ public class UserService {
         return new JoinRespDto(userPS);
     }
 
-    @Getter
-    @Setter
-    public static class JoinReqDto {
-        // 유효성 검사
-        private String username;
-        private String password;
-        private String email;
-        private String fullName;
-
-        public User toEntity(PasswordEncoder passwordEncoder) {
-            return User.builder()
-                    .username(username)
-                    .password(passwordEncoder.encode(password))
-                    .email(email)
-                    .fullname(fullName)
-                    .role(UserEnum.CUSTOMER)
-                    .build();
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class JoinRespDto {
-        private Long id;
-        private String username;
-        private String fullname;
-
-        public JoinRespDto(User user) {
-            this.id = user.getId();
-            this.username = user.getUsername();
-            this.fullname = user.getFullname();
-        }
-    }
 
 }
