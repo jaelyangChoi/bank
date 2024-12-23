@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,10 +14,12 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import project.jaeryang.bank.config.jwt.JwtAuthenticationFilter;
+import project.jaeryang.bank.config.jwt.JwtAuthorizationFilter;
 import project.jaeryang.bank.domain.user.UserEnum;
 import project.jaeryang.bank.util.CustomResponseUtil;
 
@@ -53,10 +56,12 @@ public class SecurityConfig {
         http
                 .httpBasic(auth -> auth.disable());
 
-        // JWT 로그인 필터 등록
+        // JWT 필터 등록
         http
                 .addFilterAt(new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration))
-                        , UsernamePasswordAuthenticationFilter.class);
+                        , UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new JwtAuthorizationFilter(authenticationManager(authenticationConfiguration))
+                        , BasicAuthenticationFilter.class);
 
         http
                 .authorizeHttpRequests(authorize -> authorize
@@ -66,10 +71,15 @@ public class SecurityConfig {
                 );
 
         // Exception 가로채기 (로그인을 안한 경우 authenticationEntryPoint 정의, 권한 문제면 accessDeniedHandler)
-        http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, accessDeniedException) -> {
-                    CustomResponseUtil.unAuthenticated(response, "로그인을 진행해주세요");
-                }));
+        http
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, accessDeniedException) -> {
+                            CustomResponseUtil.fail(response, "로그인을 진행해주세요", HttpStatus.UNAUTHORIZED);
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            CustomResponseUtil.fail(response, "관리자 권한이 없습니다", HttpStatus.FORBIDDEN);
+                        })
+                );
 
         return http.build();
     }
