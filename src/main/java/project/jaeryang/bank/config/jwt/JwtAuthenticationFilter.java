@@ -21,7 +21,7 @@ import static project.jaeryang.bank.dto.user.UserReqDto.LoginReqDto;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
@@ -52,5 +52,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.addHeader(JwtVO.HEADER_STRING, jwtToken);
         LoginRespDto loginRespDto = new LoginRespDto(loginUser.getUser());
         CustomResponseUtil.success(response, loginRespDto);
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        CustomResponseUtil.unAuthenticated(response, "아이디, 패스워드를 확인해주세요");
     }
 }
