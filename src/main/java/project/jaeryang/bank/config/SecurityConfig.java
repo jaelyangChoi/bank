@@ -1,26 +1,39 @@
 package project.jaeryang.bank.config;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import project.jaeryang.bank.config.jwt.JwtAuthenticationFilter;
 import project.jaeryang.bank.domain.user.UserEnum;
 import project.jaeryang.bank.util.CustomResponseUtil;
 
 import java.util.Collections;
 
 @Slf4j
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,12 +53,18 @@ public class SecurityConfig {
         http
                 .httpBasic(auth -> auth.disable());
 
+        // JWT 로그인 필터 등록
+        http
+                .addFilterAt(new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration))
+                        , UsernamePasswordAuthenticationFilter.class);
+
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/s/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole(UserEnum.ADMIN.name())
                         .anyRequest().permitAll()
                 );
+
         // Exception 가로채기 (로그인을 안한 경우 authenticationEntryPoint 정의, 권한 문제면 accessDeniedHandler)
         http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, accessDeniedException) -> {
