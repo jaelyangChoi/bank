@@ -14,7 +14,7 @@ public class CustomResponseUtil {
     public static void success(HttpServletResponse response, Object dto) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            ResponseDto<?> responseDto = new ResponseDto<>(1, "로그인 성공", null);
+            ResponseDto<?> responseDto = new ResponseDto<>(1, "로그인 성공", dto);
             String responseBody = objectMapper.writeValueAsString(responseDto);
 
             response.setContentType("application/json");

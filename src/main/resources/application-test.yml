@@ -7,7 +7,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:test;MODE=MySQL #MariaDB 쿼리 문법으로 작성하기 위해
+    url: jdbc:h2:mem:test;MODE=MySQL # MariaDB 쿼리 문법으로 작성하기 위해
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -19,13 +19,14 @@ spring:
     hibernate:
       ddl-auto: create
     properties:
-      '[hibernate.default_batch_fetch_size]': 100
-      '[hibernate.hibernate.format_sql]': true
+      hibernate.default_batch_fetch_size: 100
+      hibernate.format_sql: true
     show_sql: true
   output:
     ansi:
       enabled: always
+
 logging:
   level:
-    '[project.jaeryang.bank]': DEBUG
-    '[org.hibernate.type]': TRACE
+    project.jaeryang.bank: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE  # sql 파라미터 바인딩

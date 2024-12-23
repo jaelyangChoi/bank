@@ -1,12 +1,17 @@
 package project.jaeryang.bank.config.dummy;
 
+import lombok.Getter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserEnum;
 
+@Getter
 public class DummyObject {
+
     protected User newUser(String username, String fullname) {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         String encPassword = passwordEncoder.encode("1234");
 
         return User.builder()
