@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -46,6 +45,6 @@ public class SecurityConfigTest {
         System.out.println("responseBody = " + responseBody);
 
         //then
-        assertThat(httpStatusCode).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
+        assertThat(httpStatusCode).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }
