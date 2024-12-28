@@ -7,20 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 import project.jaeryang.bank.config.dummy.DummyObject;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.user.UserReqDto;
-import project.jaeryang.bank.dto.user.UserRespDto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Transactional
 @ActiveProfiles("test")
 @AutoConfigureMockMvc //실제 HTTP 호출 없이 컨트롤러를 테스트
 //컨텍스트 전체를 로드
@@ -71,9 +72,25 @@ class JwtAuthenticationFilterTest extends DummyObject {
     @Test
     public void unSuccessfulAuthentication_test() throws Exception {
         //given
+        String username = "cjl0701";
+        UserReqDto.LoginReqDto loginReqDto = new UserReqDto.LoginReqDto();
+        loginReqDto.setUsername(username);
+        loginReqDto.setPassword("wrong password");
+        String requestBody = objectMapper.writeValueAsString(loginReqDto);
+        System.out.println("requestBody = " + requestBody);
 
         //when
+        ResultActions resultActions = mockMvc.perform(post("/api/login")
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        String jwtToken = resultActions.andReturn().getResponse().getHeader(JwtVO.HEADER_STRING);
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("jwtToken = " + jwtToken);
+        System.out.println("responseBody = " + responseBody);
 
         //then
+        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(jsonPath("$.code").value(-1));
     }
 }
