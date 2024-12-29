@@ -28,3 +28,4 @@ spring:
 logging:
   level:
     project.jaeryang.bank: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE  # sql 파라미터 바인딩
