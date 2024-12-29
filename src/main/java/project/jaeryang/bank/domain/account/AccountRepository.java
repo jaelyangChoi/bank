@@ -7,5 +7,5 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     // TODO : User 객체 즉시 조회로 변경
-    Optional<Account> findByAccountNumber(Long accountNumber);
+    Optional<Account> findByNumber(Long accountNumber);
 }
