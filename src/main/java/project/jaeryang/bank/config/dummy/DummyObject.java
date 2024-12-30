@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import project.jaeryang.bank.domain.account.Account;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserEnum;
 
@@ -34,6 +35,25 @@ public class DummyObject {
                 .email(username + "@naver.com")
                 .fullname(fullname)
                 .role(UserEnum.CUSTOMER)
+                .build();
+    }
+
+    protected Account newAccount(Long number, User user) {
+        return Account.builder()
+                .number(number)
+                .password(1234L)
+                .balance(1000L)
+                .user(user)
+                .build();
+    }
+
+    protected Account newMockAccount(Long id, Long number, Long balance, User user) {
+        return Account.builder()
+                .id(id)
+                .number(number)
+                .password(1234L)
+                .balance(balance)
+                .user(user)
                 .build();
     }
 }
