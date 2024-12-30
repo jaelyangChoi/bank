@@ -22,6 +22,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         super(authenticationManager);
     }
 
+    /**
+     * jwt 토큰이 있을 경우 검증을 진행하지만, 토큰이 없을 경우 다음 필터로 넘어간다.
+     * 따라서 테스트 시에는 인가 필터에서 인증된 상태로 세션만 만들어주면 된다.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (isHeaderVerify(request)) {
