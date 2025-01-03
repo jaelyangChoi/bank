@@ -1,8 +1,10 @@
 package project.jaeryang.bank.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import project.jaeryang.bank.config.auth.LoginUser;
 import project.jaeryang.bank.domain.account.Account;
 import project.jaeryang.bank.domain.account.AccountRepository;
 import project.jaeryang.bank.domain.user.User;
@@ -45,5 +47,18 @@ public class AccountService {
 
         List<Account> accountPS = accountRepository.findByUserId(userId);
         return new AccountListRespDto(userPS, accountPS);
+    }
+
+    @Transactional
+    public void 계좌삭제(Long accountNumber,Long userId) {
+        // 1. 계좌 확인
+        Account accountPS = accountRepository.findByNumber(accountNumber).orElseThrow(
+                () -> new CustomApiException("존재하지 않는 계좌번호 입니다."));
+
+        // 2. 계좌 소유자 확인
+        accountPS.checkOwner(userId);
+
+        // 3. 계좌 삭제
+        accountRepository.delete(accountPS);
     }
 }

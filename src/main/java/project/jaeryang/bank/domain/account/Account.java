@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import project.jaeryang.bank.domain.common.BaseTimeEntity;
 import project.jaeryang.bank.domain.user.User;
+import project.jaeryang.bank.ex.CustomApiException;
 
 @NoArgsConstructor
 @Getter
@@ -38,5 +39,10 @@ public class Account extends BaseTimeEntity {
         this.password = password;
         this.balance = balance;
         this.user = user;
+    }
+
+    public void checkOwner(Long userId) {
+        if(!userId.equals(this.user.getId()))
+            throw new CustomApiException("계좌 소유자가 아닙니다.");
     }
 }
