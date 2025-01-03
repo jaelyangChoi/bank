@@ -1,6 +1,7 @@
 package project.jaeryang.bank.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,11 +16,13 @@ import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto.AccountDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
+import project.jaeryang.bank.ex.CustomApiException;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
@@ -82,5 +85,20 @@ class AccountServiceTest extends DummyObject {
         assertThat(accountListRespDto.getAccounts()).hasSize(2);
         assertThat(accountListRespDto.getFullname()).isEqualTo(mockUser.getFullname());
         assertThat(accountListRespDto.getAccounts().get(0)).isInstanceOf(AccountDto.class);
+    }
+
+    @Test
+    public void 계좌삭제_test() throws Exception {
+        //given
+        Long number = 1111L;
+        Long userId = 1L;
+        User mockUser = newMockUser(userId, "cjl0701", "최재량");
+        Account mockAccount = newMockAccount(1L, number, 1000L, mockUser);
+
+        //stub
+        when(accountRepository.findByNumber(number)).thenReturn(Optional.of(mockAccount));
+
+        //when & then
+        Assertions.assertThrows(CustomApiException.class, () -> accountService.계좌삭제(number, 2L));
     }
 }
