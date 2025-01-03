@@ -1,7 +1,6 @@
 package project.jaeryang.bank.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,9 +13,8 @@ import project.jaeryang.bank.domain.account.AccountRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto.AccountDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
-import project.jaeryang.bank.service.AccountService.AccountListRespDto;
-import project.jaeryang.bank.service.AccountService.AccountListRespDto.AccountDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 
 @ExtendWith(MockitoExtension.class) // spring-boot-starter-test에서 자동으로 Mockito 추가해주는 Mock 프레임워크
 class AccountServiceTest extends DummyObject {

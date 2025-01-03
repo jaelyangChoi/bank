@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import project.jaeryang.bank.config.auth.LoginUser;
 import project.jaeryang.bank.dto.ResponseDto;
+import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import project.jaeryang.bank.service.AccountService;
 
@@ -38,7 +39,7 @@ public class AccountController {
          if (!Objects.equals(id, loginUser.getUser().getId()))
             throw new CustomForbiddenException("권한 오류: 본인의 계좌만 조회할 수 있습니다.");*/
 
-        AccountService.AccountListRespDto accountListRespDto = accountService.계좌목록보기_유저별(loginUser.getUser().getId());
+        AccountListRespDto accountListRespDto = accountService.계좌목록보기_유저별(loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 목록 조회 성공", accountListRespDto), HttpStatus.OK);
     }
 
