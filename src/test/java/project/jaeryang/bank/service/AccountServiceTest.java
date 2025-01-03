@@ -1,6 +1,7 @@
 package project.jaeryang.bank.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,12 +9,16 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import project.jaeryang.bank.config.dummy.DummyObject;
+import project.jaeryang.bank.domain.account.Account;
 import project.jaeryang.bank.domain.account.AccountRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
+import project.jaeryang.bank.service.AccountService.AccountListRespDto;
+import project.jaeryang.bank.service.AccountService.AccountListRespDto.AccountDto;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,10 +58,30 @@ class AccountServiceTest extends DummyObject {
 
         //when
         AccountSaveRespDto accountSaveRespDto = accountService.계좌등록(accountSaveReqDto, userId);
-        System.out.println("accountSaveRespDto = " + objectMapper.writeValueAsString(accountSaveRespDto));;
+        System.out.println("accountSaveRespDto = " + objectMapper.writeValueAsString(accountSaveRespDto));
+        ;
 
         //then
         assertThat(accountSaveRespDto.getNumber()).isEqualTo(accountNumber);
         assertThat(accountSaveRespDto.getBalance()).isEqualTo(1000L);
+    }
+
+    @Test
+    public void 계좌목록보기_유저별_test() throws Exception {
+        //given
+        Long userId = 1L;
+        User mockUser = newMockUser(userId, "cjl0701", "최재량");
+        List<Account> mockAccounts = List.of(newMockAccount(1L, 1111L, 1000L, mockUser), newMockAccount(2L, 2222L, 1000L, mockUser));
+        //stub
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(accountRepository.findByUserId(userId)).thenReturn(mockAccounts);
+
+        //when
+        AccountListRespDto accountListRespDto = accountService.계좌목록보기_유저별(userId);
+
+        //then
+        assertThat(accountListRespDto.getAccounts()).hasSize(2);
+        assertThat(accountListRespDto.getFullname()).isEqualTo(mockUser.getFullname());
+        assertThat(accountListRespDto.getAccounts().get(0)).isInstanceOf(AccountDto.class);
     }
 }
