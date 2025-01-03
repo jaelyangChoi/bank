@@ -6,10 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import project.jaeryang.bank.config.auth.LoginUser;
 import project.jaeryang.bank.dto.ResponseDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
@@ -33,4 +30,16 @@ public class AccountController {
 
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 생성 성공", accountSaveRespDto), HttpStatus.CREATED);
     }
+
+    @GetMapping("/s/account/login-user")
+    public ResponseEntity<ResponseDto<?>> findUserAccounts(@AuthenticationPrincipal LoginUser loginUser) {
+
+        /* userId를 받아버리면 아래 검증 과정이 수반됨
+         if (!Objects.equals(id, loginUser.getUser().getId()))
+            throw new CustomForbiddenException("권한 오류: 본인의 계좌만 조회할 수 있습니다.");*/
+
+        AccountService.AccountListRespDto accountListRespDto = accountService.계좌목록보기_유저별(loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 목록 조회 성공", accountListRespDto), HttpStatus.OK);
+    }
+
 }
