@@ -11,15 +11,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 import project.jaeryang.bank.config.dummy.DummyObject;
 import project.jaeryang.bank.domain.account.AccountRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import project.jaeryang.bank.ex.CustomApiException;
-import project.jaeryang.bank.service.AccountService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -27,8 +26,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ActiveProfiles("test")
-@Transactional
+@ActiveProfiles("test") //dev 모드에서 초기화 데이터를 넣으므로 분리
+//@Transactional
+@Sql("classpath:db/teardown.sql") //PK 초기화를 위해 @BeforeEach 실행마다 테이블 초기화
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class AccountControllerTest extends DummyObject {

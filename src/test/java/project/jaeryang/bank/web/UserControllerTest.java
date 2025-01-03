@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import project.jaeryang.bank.config.dummy.DummyObject;
@@ -18,7 +20,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Transactional
+@ActiveProfiles("test")
+//@Transactional
+@Sql("classpath:db/teardown.sql")
 @AutoConfigureMockMvc //MockMvc를 자동으로 구성
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK) // Tomcat을 실행하지 않고, Mock 서블릿 환경에서 테스트를 수행
 class UserControllerTest extends DummyObject {
