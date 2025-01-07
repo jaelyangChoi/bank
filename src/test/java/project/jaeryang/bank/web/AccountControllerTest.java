@@ -17,8 +17,13 @@ import project.jaeryang.bank.config.dummy.DummyObject;
 import project.jaeryang.bank.domain.account.AccountRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
+import project.jaeryang.bank.dto.account.AccountReqDto;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountRespDto;
+import project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
+import project.jaeryang.bank.service.AccountService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -47,6 +52,8 @@ class AccountControllerTest extends DummyObject {
 
     @Autowired
     private EntityManager em;
+    @Autowired
+    private AccountService accountService;
 
     @BeforeEach
     public void setUp() {
@@ -93,7 +100,7 @@ class AccountControllerTest extends DummyObject {
     //User 정보 조회할 때 영속성컨텍스트에 User 정보가 저장된다. 정확한 쿼리를 보기 위해선 em.clear로 초기화 해주자.
     @WithUserDetails(value = "cjl0701", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Test
-    public void 계좌삭제_test() throws Exception {
+    public void deleteAccount_test() throws Exception {
         em.clear();
         //given
         Long number = 1111L;
@@ -106,5 +113,24 @@ class AccountControllerTest extends DummyObject {
         // JUnit 테스트에서 delete 쿼리는 가장 마지막에 오면 발동 안됨.
         assertThrows(CustomApiException.class, () -> accountRepository.findByNumber(number)
                 .orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다.")));
+    }
+
+    @Test
+    public void depositAccount_test() throws Exception {
+        //given
+        AccountDepositReqDto accountDepositReqDto = new AccountDepositReqDto();
+        accountDepositReqDto.setAmount(100L);
+        accountDepositReqDto.setNumber(1111L);
+        accountDepositReqDto.setTel("01027588203");
+        accountDepositReqDto.setTransactionType("DEPOSIT");
+
+        //when & then
+        mockMvc.perform(post("/api/account/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(accountDepositReqDto)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.transactionDto.sender").value("ATM"));
+
     }
 }
