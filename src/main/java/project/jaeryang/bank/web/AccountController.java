@@ -12,6 +12,8 @@ import project.jaeryang.bank.dto.ResponseDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import project.jaeryang.bank.service.AccountService;
+import project.jaeryang.bank.service.AccountService.AccountDepositReqDto;
+import project.jaeryang.bank.service.AccountService.AccountDepositRespDto;
 
 import static project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 
@@ -46,6 +48,12 @@ public class AccountController {
     @DeleteMapping("/s/account/{number}")
     public ResponseEntity<?> deleteAccount(@PathVariable("number") Long number, @AuthenticationPrincipal LoginUser loginUser) {
         accountService.계좌삭제(number, loginUser.getUser().getId());
-        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 삭제 성공", null), HttpStatus.OK);
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 삭제 완료", null), HttpStatus.OK);
+    }
+
+    @PostMapping("/account/deposit")
+    public ResponseEntity<?> deposit(@RequestBody @Valid AccountDepositReqDto accountDepositReqDto, BindingResult bindingResult) {
+        AccountDepositRespDto accountDepositRespDto = accountService.계좌입금(accountDepositReqDto);
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료", accountDepositRespDto), HttpStatus.CREATED);
     }
 }
