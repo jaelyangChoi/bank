@@ -70,4 +70,25 @@ public class RegexTest {
         boolean result = Pattern.matches("^[a-zA-Z0-9]{2,9}@[a-zA-Z]{2,6}\\.[a-zA-Z]{2,3}$", email);
         assertTrue(result);
     }
+
+    @Test
+    public void transactionType_test1() throws Exception {
+        String transactionType = "DEPOSIT";
+        boolean result = Pattern.matches("^(DEPOSIT)$", transactionType);
+        assertTrue(result);
+    }
+
+    @Test
+    public void transactionType_test2() throws Exception {
+        String transactionType = "TRANSFER";
+        boolean result = Pattern.matches("^(DEPOSIT|TRANSFER)$", transactionType);
+        assertTrue(result);
+    }
+
+    @Test
+    public void tel_test() throws Exception {
+        String transactionType = "010-2758-8203";
+        boolean result = Pattern.matches("^[0-9]{3}-[0-9]{4}-[0-9]{4}", transactionType);
+        assertTrue(result);
+    }
 }

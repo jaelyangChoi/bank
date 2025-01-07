@@ -2,6 +2,7 @@ package project.jaeryang.bank.domain.account;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,5 +45,9 @@ public class Account extends BaseTimeEntity {
     public void checkOwner(Long userId) {
         if(!userId.equals(this.user.getId())) //Account 테이블에 userId가 FK로 이미 존재하므로 Lazy loading X
             throw new CustomApiException("계좌 소유자가 아닙니다.");
+    }
+
+    public void deposit(Long amount) {
+        balance += amount;
     }
 }
