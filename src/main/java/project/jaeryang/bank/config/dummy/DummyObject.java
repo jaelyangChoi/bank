@@ -5,6 +5,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import project.jaeryang.bank.domain.account.Account;
+import project.jaeryang.bank.domain.transaction.Transaction;
+import project.jaeryang.bank.domain.transaction.TransactionEnum;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserEnum;
 
@@ -54,6 +56,23 @@ public class DummyObject {
                 .password(1234L)
                 .balance(balance)
                 .user(user)
+                .build();
+    }
+
+    protected Transaction newMockDepositTransaction(Long id, Account account) {
+        long amount = 100;
+        account.deposit(amount);
+        return Transaction.builder()
+                .id(id)
+                .depositAccount(account)
+                .withdrawAccount(null)
+                .amount(amount)
+                .depositAccountBalance(account.getBalance())
+                .withdrawAccountBalance(null)
+                .sender("ATM")
+                .receiver(account.getNumber().toString())
+                .tel("01027588203")
+                .transactionType(TransactionEnum.DEPOSIT)
                 .build();
     }
 }

@@ -45,7 +45,7 @@ public class AccountReqDto {
         @Pattern(regexp = "^(DEPOSIT)$")
         private String transactionType;
         @NotEmpty
-        @Pattern(regexp = "^[0-9]{3}-[0-9]{4}-[0-9]{4}")
+        @Pattern(regexp = "^[0-9]{3}[0-9]{4}[0-9]{4}")
         private String tel;
     }
 }

@@ -1,30 +1,40 @@
 package project.jaeryang.bank.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import project.jaeryang.bank.config.dummy.DummyObject;
 import project.jaeryang.bank.domain.account.Account;
 import project.jaeryang.bank.domain.account.AccountRepository;
+import project.jaeryang.bank.domain.transaction.Transaction;
+import project.jaeryang.bank.domain.transaction.TransactionRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto.AccountDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import static project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 
 @ExtendWith(MockitoExtension.class) // spring-boot-starter-test에서 자동으로 Mockito 추가해주는 Mock 프레임워크
@@ -36,6 +46,8 @@ class AccountServiceTest extends DummyObject {
     private AccountRepository accountRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private TransactionRepository transactionRepository;
 
     @Spy
     private ObjectMapper objectMapper;
@@ -74,6 +86,7 @@ class AccountServiceTest extends DummyObject {
         Long userId = 1L;
         User mockUser = newMockUser(userId, "cjl0701", "최재량");
         List<Account> mockAccounts = List.of(newMockAccount(1L, 1111L, 1000L, mockUser), newMockAccount(2L, 2222L, 1000L, mockUser));
+
         //stub
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
         when(accountRepository.findByUserId(userId)).thenReturn(mockAccounts);
@@ -100,5 +113,34 @@ class AccountServiceTest extends DummyObject {
 
         //when & then
         Assertions.assertThrows(CustomApiException.class, () -> accountService.계좌삭제(number, 2L));
+    }
+
+    @Test
+    public void 계좌입금_test() throws Exception {
+        //given
+        Long amount = 100L;
+        Long balance = 1000L;
+        AccountDepositReqDto accountDepositReqDto = new AccountDepositReqDto();
+        accountDepositReqDto.setAmount(amount);
+        accountDepositReqDto.setNumber(1111L);
+        accountDepositReqDto.setTel("010-2758-8203");
+        accountDepositReqDto.setTransactionType("DEPOSIT");
+
+        //stub
+        Account mockAccount = newMockAccount(1L, 1111L, balance, null);
+        when(accountRepository.findByNumber(any())).thenReturn(Optional.of(mockAccount));
+        when(transactionRepository.save(any())).thenAnswer((Answer<Transaction>) invocation -> {
+            Transaction transaction = invocation.getArgument(0);
+            //ReflectionTestUtils : 테스트 환경에서 리플렉션을 사용하여 객체의 비공개(private) 필드나 메서드에 접근하거나 수정할 때 사용
+            ReflectionTestUtils.setField(transaction, "createdAt", LocalDateTime.now());
+            return transaction;
+        });
+
+        //when
+        AccountDepositRespDto accountDepositRespDto = accountService.계좌입금(accountDepositReqDto);
+
+        //then
+        assertThat(accountDepositRespDto.getTransactionDto().getSender()).isEqualTo("ATM");
+        assertThat(accountDepositRespDto.getTransactionDto().getDepositAccountBalance()).isEqualTo(balance + amount);
     }
 }
