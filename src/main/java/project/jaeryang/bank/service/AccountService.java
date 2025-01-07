@@ -1,13 +1,6 @@
 package project.jaeryang.bank.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.jaeryang.bank.domain.account.Account;
@@ -18,12 +11,14 @@ import project.jaeryang.bank.domain.transaction.TransactionRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
-import project.jaeryang.bank.util.CustomDateUtil;
 
 import java.util.List;
+
+import static project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -103,58 +98,5 @@ public class AccountService {
         return new AccountDepositRespDto(depositAccountPS, transactionPS);
     }
 
-    @Getter
-    @Setter
-    public static class AccountDepositReqDto {
-        @NotNull
-        @Digits(integer = 4, fraction = 4)
-        private Long number;
-        @NotNull
-        private Long amount;
-        @NotEmpty
-        @Pattern(regexp = "^(DEPOSIT)$")
-        private String transactionType;
-        @NotEmpty
-        @Pattern(regexp = "^[0-9]{3}-[0-9]{4}-[0-9]{4}")
-        private String tel;
-    }
 
-    @Getter
-    @Setter
-    public static class AccountDepositRespDto {
-        private Long id;
-        private Long number;
-        private TransactionDto transactionDto;
-
-        public AccountDepositRespDto(Account account, Transaction transaction) {
-            this.id = account.getId();
-            this.number = account.getNumber();
-            this.transactionDto = new TransactionDto(transaction);
-        }
-
-        @Getter
-        @Setter
-        public static class TransactionDto {
-            private Long id;
-            private String transactionType;
-            private String sender;
-            private String receiver;
-            private Long amount;
-            private String tel;
-            private String createdAt;
-            @JsonIgnore
-            private Long depositAccountBalance; //클라이언트에게 전달x, 서비스단에서 테스트 용도
-
-            public TransactionDto(Transaction transaction) {
-                this.id = transaction.getId();
-                this.transactionType = transaction.getTransactionType().getValue();
-                this.sender = transaction.getSender();
-                this.receiver = transaction.getReceiver();
-                this.amount = transaction.getAmount();
-                this.tel = transaction.getTel();
-                this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
-                this.depositAccountBalance = transaction.getDepositAccountBalance();
-            }
-        }
-    }
 }

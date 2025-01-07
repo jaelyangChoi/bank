@@ -12,10 +12,10 @@ import project.jaeryang.bank.dto.ResponseDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import project.jaeryang.bank.service.AccountService;
-import project.jaeryang.bank.service.AccountService.AccountDepositReqDto;
-import project.jaeryang.bank.service.AccountService.AccountDepositRespDto;
 
+import static project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import static project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import static project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 
 @RequiredArgsConstructor
 @RequestMapping("/api")
