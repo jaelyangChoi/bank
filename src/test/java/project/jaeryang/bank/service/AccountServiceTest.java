@@ -75,7 +75,6 @@ class AccountServiceTest extends DummyObject {
         //when
         AccountSaveRespDto accountSaveRespDto = accountService.계좌등록(accountSaveReqDto, userId);
         System.out.println("accountSaveRespDto = " + objectMapper.writeValueAsString(accountSaveRespDto));
-        ;
 
         //then
         assertThat(accountSaveRespDto.getNumber()).isEqualTo(accountNumber);
@@ -151,15 +150,16 @@ class AccountServiceTest extends DummyObject {
      * assertThrows는 테스트 환경에서만 로직을 실행하고, 애플리케이션의 실제 동작에는 영향을 미치지 않는다. (테스트 컨텍스트에서만 동작)
      */
     @Test
-    public void 출금계좌_test() throws Exception {
+    public void 계좌출금_test() throws Exception {
         //given
         Long userId = 1L;
+        Long number = 1111L;
         Long password = 1234L;
         Long amount = 1000L;
         Long balance = 1000L;
 
         User mockUser = newMockUser(userId, "cjl0701", "최재량");
-        Account withdrawAccount = newMockAccount(1L, password, balance, mockUser);
+        Account withdrawAccount = newMockAccount(1L, number, balance, mockUser);
 
         //when
         //1. 0원 체크
@@ -173,7 +173,7 @@ class AccountServiceTest extends DummyObject {
 
         //4. 패스워드 확인
         withdrawAccount.checkPassword(password);
-        assertThrows(CustomApiException.class, () -> withdrawAccount.checkPassword(1111L));
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkPassword(12345L));
 
         //5. 출금계좌 잔액 확인
         withdrawAccount.checkBalance(amount);
@@ -185,5 +185,49 @@ class AccountServiceTest extends DummyObject {
 
         //then
         assertThat(withdrawAccount.getBalance()).isEqualTo(balance - amount);
+    }
+
+    @Test
+    public void 계좌이체_test() throws Exception {
+        //given
+        Long userId = 1L;
+        Long withdrawNumber = 1111L;
+        Long withdrawPassword = 1234L;
+        Long depositNumber = 2222L;
+        Long amount = 100L;
+        Long balance = 1000L;
+
+        User mockUser = newMockUser(userId, "cjl0701", "최재량");
+        Account withdrawAccount = newMockAccount(1L, withdrawNumber, balance, mockUser);
+        Account depositAccount = newMockAccount(1L, depositNumber, balance, mockUser);
+
+        //when
+        //1. 출금 계좌와 입금 계좌가 동일하면 안됨
+        if (withdrawNumber.equals(depositNumber))
+            throw new CustomApiException("출금 계좌와 입금 계좌가 동일합니다");
+
+        //2. 0원 체크
+        if (amount <= 0L)
+            throw new CustomApiException("0원 이하의 금액을 출금할 수 없습니다.");
+
+        //3. 본인 확인
+        withdrawAccount.checkOwner(userId);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkOwner(2L));
+
+        //4. 패스워드 확인
+        withdrawAccount.checkPassword(withdrawPassword);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkPassword(12345L));
+
+        //5. 출금계좌 잔액 확인
+        withdrawAccount.checkBalance(amount);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkBalance(balance + 1000));
+
+        //6. 이체 (잔액 확인이 누락되면 안되므로 출금 메소드에 녹인다!)
+        withdrawAccount.withdraw(amount);
+        depositAccount.deposit(amount);
+
+        //then
+        assertThat(withdrawAccount.getBalance()).isEqualTo(balance - amount);
+        assertThat(depositAccount.getBalance()).isEqualTo(balance + amount);
     }
 }
