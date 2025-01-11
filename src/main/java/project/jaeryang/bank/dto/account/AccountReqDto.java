@@ -62,7 +62,7 @@ public class AccountReqDto {
         @NotNull
         private Long amount;
         @NotEmpty
-        @Pattern(regexp = "^(WTIHDRAW)$")
+        @Pattern(regexp = "^(WITHDRAW)$")
         private String transactionType;
     }
 }

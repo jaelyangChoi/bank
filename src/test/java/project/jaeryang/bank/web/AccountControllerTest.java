@@ -20,6 +20,7 @@ import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountWithdrawReqDto;
 import project.jaeryang.bank.dto.account.AccountRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
@@ -55,11 +56,15 @@ class AccountControllerTest extends DummyObject {
     @Autowired
     private AccountService accountService;
 
+    private final Long testAccountNumber = 1111L;
+    private final Long testAccountPassword = 1234L;
+    private final Long testAccountBalance = 1000L;
+
     @BeforeEach
     public void setUp() {
         User cjl0701 = userRepository.save(newUser("cjl0701", "최재량"));
         User testUser = userRepository.save(newUser("test", "테스트계정"));
-        accountRepository.save(newAccount(1111L, cjl0701));
+        accountRepository.save(newAccount(testAccountNumber, cjl0701));
         accountRepository.save(newAccount(2222L, cjl0701));
         accountRepository.save(newAccount(3333L, testUser));
         em.clear(); //쿼리 확인을 위해 영속성 컨텍스트 비우기
@@ -120,17 +125,37 @@ class AccountControllerTest extends DummyObject {
         //given
         AccountDepositReqDto accountDepositReqDto = new AccountDepositReqDto();
         accountDepositReqDto.setAmount(100L);
-        accountDepositReqDto.setNumber(1111L);
+        accountDepositReqDto.setNumber(testAccountNumber);
         accountDepositReqDto.setTel("01027588203");
         accountDepositReqDto.setTransactionType("DEPOSIT");
 
         //when & then
         mockMvc.perform(post("/api/account/deposit")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(accountDepositReqDto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(accountDepositReqDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.transactionDto.sender").value("ATM"));
 
+    }
+
+    @Test
+    @WithUserDetails(value = "cjl0701", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void withdrawAccount_test() throws Exception {
+        //given
+        Long amount = 100L;
+        AccountWithdrawReqDto accountWithdrawReqDto = new AccountWithdrawReqDto();
+        accountWithdrawReqDto.setNumber(testAccountNumber);
+        accountWithdrawReqDto.setPassword(testAccountPassword);
+        accountWithdrawReqDto.setAmount(amount);
+        accountWithdrawReqDto.setTransactionType("WITHDRAW");
+
+        //when & then
+        mockMvc.perform(post("/api/s/account/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(accountWithdrawReqDto)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.balance").value(Long.toString(testAccountBalance - amount)));
     }
 }

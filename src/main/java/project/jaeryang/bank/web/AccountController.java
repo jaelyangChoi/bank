@@ -9,12 +9,16 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import project.jaeryang.bank.config.auth.LoginUser;
 import project.jaeryang.bank.dto.ResponseDto;
+import project.jaeryang.bank.dto.account.AccountReqDto;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountWithdrawReqDto;
+import project.jaeryang.bank.dto.account.AccountRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import project.jaeryang.bank.service.AccountService;
 
 import static project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import static project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import static project.jaeryang.bank.dto.account.AccountRespDto.*;
 import static project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 
 @RequiredArgsConstructor
@@ -55,5 +59,13 @@ public class AccountController {
     public ResponseEntity<?> depositAccount(@RequestBody @Valid AccountDepositReqDto accountDepositReqDto, BindingResult bindingResult) {
         AccountDepositRespDto accountDepositRespDto = accountService.계좌입금(accountDepositReqDto);
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료", accountDepositRespDto), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/s/account/withdraw")
+    public ResponseEntity<?> depositAccount(@RequestBody @Valid AccountWithdrawReqDto accountWithdrawReqDto,
+                                            BindingResult bindingResult,
+                                            @AuthenticationPrincipal LoginUser loginUser) {
+        AccountWithdrawRespDto accountWithdrawRespDto = accountService.계좌출금(accountWithdrawReqDto, loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 출금 완료", accountWithdrawRespDto), HttpStatus.CREATED);
     }
 }
