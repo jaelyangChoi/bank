@@ -190,7 +190,7 @@ class AccountServiceTest extends DummyObject {
     @Test
     public void 계좌이체_test() throws Exception {
         //given
-        Long userId = 1L;
+        Long userId = 1000L;
         Long withdrawNumber = 1111L;
         Long withdrawPassword = 1234L;
         Long depositNumber = 2222L;
