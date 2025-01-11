@@ -11,10 +11,12 @@ import project.jaeryang.bank.domain.transaction.TransactionRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountTransferReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountWithdrawReqDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
+import project.jaeryang.bank.dto.account.AccountRespDto.AccountTransferRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
 
 import java.util.List;
@@ -138,5 +140,48 @@ public class AccountService {
         Transaction transactionPS = transactionRepository.save(transaction);
 
         return new AccountWithdrawRespDto(withdrawAccountPS, transactionPS);
+    }
+
+    @Transactional
+    public AccountTransferRespDto 계좌이체(AccountTransferReqDto accountTransferReqDto, Long userId) {
+        //1. 출금 계좌와 입금 계좌가 동일하면 안됨
+        if (accountTransferReqDto.getDepositNumber().equals(accountTransferReqDto.getWithdrawNumber()))
+            throw new CustomApiException("출금 계좌와 입금 계좌가 동일합니다");
+
+        //2. 0원 체크
+        if (accountTransferReqDto.getAmount() <= 0L)
+            throw new CustomApiException("0원 이하의 금액을 출금할 수 없습니다.");
+
+        //3. 계좌 확인
+        Account withdrawAccountPS = accountRepository.findByNumber(accountTransferReqDto.getWithdrawNumber())
+                .orElseThrow(() -> new CustomApiException("출금 계좌를 찾을 수 없습니다."));
+
+        Account depositAccountPS = accountRepository.findByNumber(accountTransferReqDto.getDepositNumber())
+                .orElseThrow(() -> new CustomApiException("입금 계좌를 찾을 수 없습니다."));
+
+        //4. 본인 확인
+        withdrawAccountPS.checkOwner(userId);
+
+        //5. 패스워드 확인
+        withdrawAccountPS.checkPassword(accountTransferReqDto.getWithdrawPassword());
+
+        //6. 이체 (잔액 확인이 누락되면 안되므로 출금 메소드에 녹인다!)
+        withdrawAccountPS.withdraw(accountTransferReqDto.getAmount());
+        depositAccountPS.deposit(accountTransferReqDto.getAmount());
+
+        //7. 거래 내역
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(withdrawAccountPS)
+                .depositAccount(depositAccountPS)
+                .withdrawAccountBalance(withdrawAccountPS.getBalance())
+                .depositAccountBalance(depositAccountPS.getBalance())
+                .amount(accountTransferReqDto.getAmount())
+                .sender(withdrawAccountPS.getNumber().toString())
+                .receiver(depositAccountPS.getNumber().toString())
+                .transactionType(TransactionEnum.TRANSFER)
+                .build();
+        Transaction transactionPS = transactionRepository.save(transaction);
+
+        return new AccountTransferRespDto(withdrawAccountPS, transactionPS);
     }
 }

@@ -1,6 +1,5 @@
 package project.jaeryang.bank.dto.account;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -8,9 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import project.jaeryang.bank.domain.account.Account;
-import project.jaeryang.bank.domain.transaction.Transaction;
 import project.jaeryang.bank.domain.user.User;
-import project.jaeryang.bank.util.CustomDateUtil;
 
 public class AccountReqDto {
     @Getter
@@ -49,7 +46,6 @@ public class AccountReqDto {
         private String tel;
     }
 
-
     @Getter
     @Setter
     public static class AccountWithdrawReqDto {
@@ -63,6 +59,25 @@ public class AccountReqDto {
         private Long amount;
         @NotEmpty
         @Pattern(regexp = "^(WITHDRAW)$")
+        private String transactionType;
+    }
+
+    @Getter
+    @Setter
+    public static class AccountTransferReqDto {
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long withdrawNumber;
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long depositNumber;
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long withdrawPassword;
+        @NotNull
+        private Long amount;
+        @NotEmpty
+        @Pattern(regexp = "^(TRANSFER)$")
         private String transactionType;
     }
 }
