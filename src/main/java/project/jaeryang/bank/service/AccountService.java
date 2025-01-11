@@ -11,6 +11,7 @@ import project.jaeryang.bank.domain.transaction.TransactionRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountWithdrawReqDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountListRespDto;
 import project.jaeryang.bank.dto.account.AccountRespDto.AccountSaveRespDto;
@@ -19,6 +20,7 @@ import project.jaeryang.bank.ex.CustomApiException;
 import java.util.List;
 
 import static project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
+import static project.jaeryang.bank.dto.account.AccountRespDto.AccountWithdrawRespDto;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -74,7 +76,7 @@ public class AccountService {
         if (accountDepositReqDto.getAmount() <= 0L)
             throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다.");
 
-        //2.입금 계좌 확인
+        //2. 입금 계좌 확인
         Account depositAccountPS = accountRepository.findByNumber(accountDepositReqDto.getNumber())
                 .orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다."));
 
@@ -99,4 +101,42 @@ public class AccountService {
     }
 
 
+    //ATM -> 계좌
+    @Transactional
+    public AccountWithdrawRespDto 계좌출금(AccountWithdrawReqDto accountWithdrawReqDto, Long userId) {
+        //1. 0원 체크
+        if (accountWithdrawReqDto.getAmount() <= 0L)
+            throw new CustomApiException("0원 이하의 금액을 출금할 수 없습니다.");
+
+        //2. 출금 계좌 확인
+        Account withdrawAccountPS = accountRepository.findByNumber(accountWithdrawReqDto.getNumber())
+                .orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다."));
+
+        //3. 본인 확인
+        withdrawAccountPS.checkOwner(userId);
+
+        //4. 패스워드 확인
+        withdrawAccountPS.checkPassword(accountWithdrawReqDto.getPassword());
+
+        //5. 출금계좌 잔액 확인
+        withdrawAccountPS.checkBalance(accountWithdrawReqDto.getAmount());
+
+        //6. 출금
+        withdrawAccountPS.withdraw(accountWithdrawReqDto.getAmount());
+
+        //7. 거래 내역
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(withdrawAccountPS)
+                .depositAccount(null)
+                .withdrawAccountBalance(withdrawAccountPS.getBalance())
+                .depositAccountBalance(null)
+                .amount(accountWithdrawReqDto.getAmount())
+                .sender(withdrawAccountPS.getNumber().toString())
+                .receiver("ATM")
+                .transactionType(TransactionEnum.WITHDRAW)
+                .build();
+        Transaction transactionPS = transactionRepository.save(transaction);
+
+        return new AccountWithdrawRespDto(withdrawAccountPS, transactionPS);
+    }
 }

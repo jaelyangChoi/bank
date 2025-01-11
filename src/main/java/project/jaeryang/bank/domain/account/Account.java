@@ -2,6 +2,7 @@ package project.jaeryang.bank.domain.account;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,11 +44,26 @@ public class Account extends BaseTimeEntity {
     }
 
     public void checkOwner(Long userId) {
-        if(!userId.equals(this.user.getId())) //Account 테이블에 userId가 FK로 이미 존재하므로 Lazy loading X
+        if (!userId.equals(this.user.getId())) //Account 테이블에 userId가 FK로 이미 존재하므로 Lazy loading X
             throw new CustomApiException("계좌 소유자가 아닙니다.");
+    }
+
+    public void checkPassword(Long password) {
+        if (!password.equals(this.password))
+            throw new CustomApiException("계좌 비밀번호가 틀렸습니다.");
     }
 
     public void deposit(Long amount) {
         balance += amount;
+    }
+
+    public void withdraw(Long amount) {
+        balance -= amount;
+    }
+
+
+    public void checkBalance(Long amount) {
+        if (balance < amount)
+            throw new CustomApiException("잔액이 부족합니다.");
     }
 }
