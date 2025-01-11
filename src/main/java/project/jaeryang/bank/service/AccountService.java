@@ -119,9 +119,9 @@ public class AccountService {
         withdrawAccountPS.checkPassword(accountWithdrawReqDto.getPassword());
 
         //5. 출금계좌 잔액 확인
-        withdrawAccountPS.checkBalance(accountWithdrawReqDto.getAmount());
+//        withdrawAccountPS.checkBalance(accountWithdrawReqDto.getAmount());
 
-        //6. 출금
+        //6. 출금 (잔액 확인이 누락되면 안되므로 출금 메소드에 녹인다!)
         withdrawAccountPS.withdraw(accountWithdrawReqDto.getAmount());
 
         //7. 거래 내역

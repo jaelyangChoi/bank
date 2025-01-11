@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
@@ -112,7 +114,7 @@ class AccountServiceTest extends DummyObject {
         when(accountRepository.findByNumber(number)).thenReturn(Optional.of(mockAccount));
 
         //when & then
-        Assertions.assertThrows(CustomApiException.class, () -> accountService.계좌삭제(number, 2L));
+        assertThrows(CustomApiException.class, () -> accountService.계좌삭제(number, 2L));
     }
 
     @Test
@@ -142,5 +144,46 @@ class AccountServiceTest extends DummyObject {
         //then
         assertThat(accountDepositRespDto.getTransactionDto().getSender()).isEqualTo("ATM");
         assertThat(accountDepositRespDto.getTransactionDto().getDepositAccountBalance()).isEqualTo(balance + amount);
+    }
+
+    /**
+     * DTO 생성 여부는 컨트롤러 테스트에서 확인하고, 빠르게 기능이 잘 동작하는지만 테스트한다.
+     * assertThrows는 테스트 환경에서만 로직을 실행하고, 애플리케이션의 실제 동작에는 영향을 미치지 않는다. (테스트 컨텍스트에서만 동작)
+     */
+    @Test
+    public void 출금계좌_test() throws Exception {
+        //given
+        Long userId = 1L;
+        Long password = 1234L;
+        Long amount = 1000L;
+        Long balance = 1000L;
+
+        User mockUser = newMockUser(userId, "cjl0701", "최재량");
+        Account withdrawAccount = newMockAccount(1L, password, balance, mockUser);
+
+        //when
+        //1. 0원 체크
+        if (amount <= 0L)
+            throw new CustomApiException("0원 이하의 금액을 출금할 수 없습니다.");
+
+
+        //3. 본인 확인
+        withdrawAccount.checkOwner(userId);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkOwner(2L));
+
+        //4. 패스워드 확인
+        withdrawAccount.checkPassword(password);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkPassword(1111L));
+
+        //5. 출금계좌 잔액 확인
+        withdrawAccount.checkBalance(amount);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.checkBalance(balance + 1000));
+
+        //6. 출금 (잔액 확인이 누락되면 안되므로 출금 메소드에 녹인다!)
+        withdrawAccount.withdraw(amount);
+        assertThrows(CustomApiException.class, () -> withdrawAccount.withdraw(balance + 1000));
+
+        //then
+        assertThat(withdrawAccount.getBalance()).isEqualTo(balance - amount);
     }
 }

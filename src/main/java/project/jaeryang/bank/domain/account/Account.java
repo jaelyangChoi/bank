@@ -58,9 +58,9 @@ public class Account extends BaseTimeEntity {
     }
 
     public void withdraw(Long amount) {
+        checkBalance(amount);
         balance -= amount;
     }
-
 
     public void checkBalance(Long amount) {
         if (balance < amount)
