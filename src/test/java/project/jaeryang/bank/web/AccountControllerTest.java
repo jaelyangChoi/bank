@@ -17,12 +17,10 @@ import project.jaeryang.bank.config.dummy.DummyObject;
 import project.jaeryang.bank.domain.account.AccountRepository;
 import project.jaeryang.bank.domain.user.User;
 import project.jaeryang.bank.domain.user.UserRepository;
-import project.jaeryang.bank.dto.account.AccountReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import project.jaeryang.bank.dto.account.AccountReqDto.AccountTransferReqDto;
 import project.jaeryang.bank.dto.account.AccountReqDto.AccountWithdrawReqDto;
-import project.jaeryang.bank.dto.account.AccountRespDto;
-import project.jaeryang.bank.dto.account.AccountRespDto.AccountDepositRespDto;
 import project.jaeryang.bank.ex.CustomApiException;
 import project.jaeryang.bank.service.AccountService;
 
@@ -58,6 +56,7 @@ class AccountControllerTest extends DummyObject {
 
     private final Long testAccountNumber = 1111L;
     private final Long testAccountPassword = 1234L;
+    private final Long testAccountNumber2 = 2222L;
     private final Long testAccountBalance = 1000L;
 
     @BeforeEach
@@ -65,7 +64,7 @@ class AccountControllerTest extends DummyObject {
         User cjl0701 = userRepository.save(newUser("cjl0701", "최재량"));
         User testUser = userRepository.save(newUser("test", "테스트계정"));
         accountRepository.save(newAccount(testAccountNumber, cjl0701));
-        accountRepository.save(newAccount(2222L, cjl0701));
+        accountRepository.save(newAccount(testAccountNumber2, cjl0701));
         accountRepository.save(newAccount(3333L, testUser));
         em.clear(); //쿼리 확인을 위해 영속성 컨텍스트 비우기
     }
@@ -157,5 +156,29 @@ class AccountControllerTest extends DummyObject {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.balance").value(Long.toString(testAccountBalance - amount)));
+    }
+
+    @Test
+    @WithUserDetails(value = "cjl0701", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void transferAccount_test() throws Exception {
+        //given
+        Long amount = 100L;
+        AccountTransferReqDto accountTransferReqDto = new AccountTransferReqDto();
+        accountTransferReqDto.setWithdrawNumber(testAccountNumber);
+        accountTransferReqDto.setDepositNumber(testAccountNumber2);
+        accountTransferReqDto.setWithdrawPassword(testAccountPassword);
+        accountTransferReqDto.setAmount(amount);
+        accountTransferReqDto.setTransactionType("TRANSFER");
+
+        //when & then
+        mockMvc.perform(post("/api/s/account/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(accountTransferReqDto)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.balance").value(Long.toString(testAccountBalance - amount)))
+                .andExpect(jsonPath("$.data.transactionDto.sender").value(testAccountNumber))
+                .andExpect(jsonPath("$.data.transactionDto.receiver").value(testAccountNumber2))
+        ;
     }
 }
