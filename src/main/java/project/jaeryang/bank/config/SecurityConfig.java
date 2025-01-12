@@ -86,12 +86,12 @@ public class SecurityConfig {
 
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*")); //모든 IP 주소 허용 (원래는 프론트엔드 IP만 허용)
+        configuration.setAllowCredentials(true); //클라이언트에서 자격 증명(쿠키,인증헤더) 요청 허용. 설정하면 반드시 특정 Origin을 명시하거나 allowedOriginPatterns()를 사용
+        configuration.setAllowedOriginPatterns(Collections.singletonList("http://localhost:*")); //모든 IP 주소 허용 (원래는 프론트엔드 IP만 허용)
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setAllowedMethods(Collections.singletonList("*"));
-        configuration.setAllowCredentials(true); //클라이언트에서 쿠키 요청 허용
         configuration.setMaxAge(3600L);
-        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+        configuration.setExposedHeaders(Collections.singletonList("Authorization")); //브라우저가 JS에 해당 응답 헤더를 노출해줌
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

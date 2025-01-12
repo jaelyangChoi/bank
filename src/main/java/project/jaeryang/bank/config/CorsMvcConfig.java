@@ -10,6 +10,10 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*");
+                .allowCredentials(true)
+// 클라이언트에서 자격 증명(쿠키,인증헤더) 요청 허용 설정하면 반드시 특정 Origin을 명시하거나 allowedOriginPatterns()를 사용해야 한다.
+//                .allowedOrigins("*")
+                .allowedOriginPatterns("http://localhost:*")
+                ;
     }
 }
